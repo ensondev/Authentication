@@ -18,6 +18,7 @@ export default class LogIn implements OnDestroy {
   private _formBuilder = inject(FormBuilder);
   private _router = inject(Router);
   private _authState = inject(AuthStateService);
+  
   private _subscription: Subscription | null = null;
 
   form = this._formBuilder.group({
