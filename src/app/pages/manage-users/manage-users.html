@@ -1,0 +1,60 @@
+<section class="manage-users">
+    <div class="table-header">
+        <h2>Administración de Usuarios</h2>
+        <button class="refresh-button" (click)="loadUsers()">
+            <i class="refresh-icon"></i> Actualizar lista
+        </button>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre de Usuario</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Estado de carga -->
+                <tr *ngIf="isLoading">
+                    <td colspan="4">Cargando usuarios...</td>
+                </tr>
+                
+                <!-- Sin usuarios -->
+                <tr *ngIf="!isLoading && users.length === 0">
+                    <td colspan="4">No hay usuarios registrados</td>
+                </tr>
+                
+                <!-- Lista de usuarios -->
+                <tr *ngFor="let user of users">
+                    <td>{{ user.id_usuario }}</td>
+                    <td>{{ user.nombre_usuario }}</td>
+                    <td>{{ user.rol_usuario }}</td>
+                    <td>
+                        <button class="action-button edit-button">
+                            <i class="edit-icon"></i> Editar
+                        </button>
+                        <button class="action-button delete-button" (click)="deleteUser(user.id_usuario)">
+                            <i class="delete-icon"></i> Eliminar
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Paginación -->
+    <div class="table-footer" *ngIf="totalUsers > usersPerPage">
+        <div class="pagination-controls">
+            <button [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+                Anterior
+            </button>
+            <span>Página {{ currentPage }} de {{ Math.ceil(totalUsers / usersPerPage) }}</span>
+            <button [disabled]="currentPage * usersPerPage >= totalUsers" (click)="onPageChange(currentPage + 1)">
+                Siguiente
+            </button>
+        </div>
+    </div>
+</section>
