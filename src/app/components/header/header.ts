@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { 
@@ -6,10 +6,6 @@ import {
   faHouse,
   faUsers,
   faHandshakeAngle,
-  faNewspaper,
-  faEnvelope,
-  faDiagramProject,
-  faBox,
   faBoxes,
   faReceipt,
   faCashRegister,
@@ -22,11 +18,11 @@ import {
   faFacebook,
   faInstagram, 
 } from '@fortawesome/free-brands-svg-icons';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { AuthStateService } from '../../shared/services/auth-state.service';
 
 @Component({
   selector: 'app-header',
-  standalone: true,
   imports: [
     RouterModule,
     NgIf,
@@ -36,15 +32,43 @@ import { RouterModule } from '@angular/router';
   styleUrl: './header.css'
 })
 export class Header {
-  // Iconos principales
+  usuario: string = '';
+  rol: string = '';
+  iniciales: string = '';
+
+  private router = inject(Router);
+
+  constructor(private authState: AuthStateService) {
+    const session = this.authState.getSession();
+    if (session) {
+      this.usuario = session.usuario;
+      this.rol = session.rol;
+      this.iniciales = this.obtenerIniciales(session.usuario);
+    }
+  }
+
+  obtenerIniciales(nombre: string): string {
+    const palabras = nombre.trim().split(' ');
+    if (palabras.length === 1) return palabras[0].substring(0, 2).toUpperCase();
+    return (palabras[0][0] + palabras[1][0]).toUpperCase();
+  }
+
+  isDonacionesOpen = false;
+  isInventarioOpen = false;
+
+  toggleSubmenu(menu: string) {
+    if (menu === 'donaciones') {
+      this.isDonacionesOpen = !this.isDonacionesOpen;
+    } else if (menu === 'inventario') {
+      this.isInventarioOpen = !this.isInventarioOpen;
+    }
+  }
+
+  // Iconos
   faBars = faBars;
   faHouse = faHouse;
   faUsers = faUsers;
   faHandshakeAngle = faHandshakeAngle;
-  faNewspaper = faNewspaper;
-  faEnvelope = faEnvelope;
-  faDiagramProject = faDiagramProject;
-  faBox = faBox;
   faBoxes = faBoxes;
   faReceipt = faReceipt;
   faCashRegister = faCashRegister;
@@ -57,48 +81,20 @@ export class Header {
   faFacebook = faFacebook;
   faInstagram = faInstagram;
 
-  // Estado del menú
   isMenuOpen = signal(false);
-  activeSubmenu = signal<string | null>(null);
-
-  // Datos del usuario (deberías obtenerlos de tu servicio de autenticación)
-  userName = 'Administrador';
-  userRole = 'Administrador';
-  userInitials = this.getInitials(this.userName);
 
   toggleMenu() {
-    this.isMenuOpen.update(prev => !prev);
-    if (!this.isMenuOpen()) {
-      this.activeSubmenu.set(null); // Cierra submenús al cerrar el menú principal
-    }
+    requestAnimationFrame(() => {
+      this.isMenuOpen.update(prev => !prev);
+    });
   }
 
   closeMenu() {
     this.isMenuOpen.set(false);
-    this.activeSubmenu.set(null);
   }
 
-  toggleSubmenu(submenuKey: string) {
-    if (this.activeSubmenu() === submenuKey) {
-      this.activeSubmenu.set(null);
-    } else {
-      this.activeSubmenu.set(submenuKey);
-    }
-  }
-
-  isSubmenuOpen(submenuKey: string): boolean {
-    return this.activeSubmenu() === submenuKey;
-  }
-
-  private getInitials(name: string): string {
-    return name.split(' ').map(part => part[0]).join('').toUpperCase();
-  }
-
-  // Método para cerrar sesión (implementa según tu AuthService)
   logout() {
-    console.log('Cerrar sesión');
-    // this.authService.logout();
-    // this.router.navigate(['/login']);
-    this.closeMenu();
+    this.authState.signOut();
+    this.router.navigate(['/auth/log-in']);
   }
 }

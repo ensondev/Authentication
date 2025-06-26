@@ -11,7 +11,9 @@ interface Session{
     providedIn: 'root',
 })
 export class AuthStateService {
+    private readonly SESSION_KEY = 'app_session';
     private _storageService = inject(StorageService);
+    
 
     signOut(){
         this._storageService.remove('session');
